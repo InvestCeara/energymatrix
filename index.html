@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matriz Energética — SIGA/ANEEL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --verde:#207d3d;--verde-mid:#2a9e50;--verde-light:#33a963;
+  --dourado:#cea34d;--teal:#54a6a9;--teal-light:#7bbfc0;--terra:#cc7f4b;
+  --bg:#0d1a12;--bg2:#122019;--bg3:#182b1e;
+  --card:#1a2f21;--border:rgba(51,169,99,.18);--border2:rgba(206,163,77,.25);
+  --text:#e8f0ea;--text-muted:#8aaa90;--text-dim:#4d6e55;
+  --fd:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--r:12px;--rl:18px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:15px;line-height:1.6;min-height:100vh}
+.hdr{background:linear-gradient(135deg,var(--bg2),#0a1a10);border-bottom:1px solid var(--border2);padding:0 24px;position:sticky;top:0;z-index:100}
+.hdr-in{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:18px;height:64px}
+.hdr-logo{display:flex;align-items:center;flex-shrink:0}
+.hdr-brasao-horiz{height:44px;width:auto;max-width:280px;object-fit:contain}
+.hdr-div{width:1px;height:32px;background:var(--border);flex-shrink:0}
+.hdr-badge{font-size:11px;color:var(--text-muted);padding:4px 10px;border:1px solid var(--border);border-radius:20px;white-space:nowrap}
+.hdr-sp{flex:1}
+.uf-wrap{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.uf-lbl{font-size:11px;color:var(--text-dim);white-space:nowrap}
+.uf-select{font-family:var(--fd);font-size:12px;font-weight:600;color:var(--verde-light);background:rgba(51,169,99,.08);border:1px solid rgba(51,169,99,.35);padding:6px 26px 6px 10px;border-radius:8px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2333a963' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.uf-select option{background:#1a2f21;color:#e8f0ea}
+.data-tag{font-size:11px;font-family:var(--fd);font-weight:600;color:var(--verde-light);background:rgba(51,169,99,.1);border:1px solid rgba(51,169,99,.3);padding:5px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.04em}
+.hero{background:linear-gradient(180deg,var(--bg2),var(--bg));padding:48px 24px 32px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(51,169,99,.06),transparent 70%);pointer-events:none}
+.hero-in{max-width:1280px;margin:0 auto;display:flex;align-items:flex-end;gap:40px;flex-wrap:wrap}
+.hero-text{flex:1;min-width:260px}
+.hero-ey{font-size:11px;font-family:var(--fd);font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--verde-light);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.hero-ey::before{content:'';display:inline-block;width:24px;height:2px;background:var(--verde-light)}
+.hero-h{font-family:var(--fd);font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.05;letter-spacing:-.02em;margin-bottom:12px}
+.hero-h .wh{color:#fff}.hero-h .ac{color:var(--dourado)}
+.hero-desc{font-size:14px;color:var(--text-muted);max-width:520px;line-height:1.7}
+.src-note{font-size:11px;color:var(--text-dim);margin-top:12px;display:flex;align-items:center;gap:6px}
+.src-note a{color:var(--teal-light);text-decoration:none}
+.kpi-strip{display:flex;gap:14px;flex-wrap:wrap;align-self:flex-end}
+.kpi-c{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;min-width:140px;position:relative;overflow:hidden;flex:1}
+.kpi-c::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--verde-light)}
+.kpi-c.gold::before{background:var(--dourado)}.kpi-c.teal::before{background:var(--teal)}.kpi-c.terra::before{background:var(--terra)}
+.kpi-lbl{font-size:10px;font-family:var(--fd);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;display:block}
+.kpi-val{font-family:var(--fd);font-size:28px;font-weight:800;line-height:1;color:var(--text)}
+.kpi-val small{font-size:13px;font-weight:600;color:var(--text-muted);margin-left:2px}
+.kpi-sub{font-size:11px;color:var(--text-dim);margin-top:4px}
+.main{max-width:1280px;margin:0 auto;padding:32px 24px 64px}
+.sec-title{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.g12{display:grid;grid-template-columns:1fr 2fr;gap:20px;margin-bottom:20px}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px}
+.sgap{margin-bottom:36px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
+.card-t{font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.acc{width:3px;height:16px;border-radius:2px;display:inline-block;margin-right:10px;flex-shrink:0;background:var(--verde-light)}
+.acc.gold{background:var(--dourado)}.acc.teal{background:var(--teal)}.acc.terra{background:var(--terra)}
+.donut-lay{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.donut-wrap{position:relative;flex-shrink:0;width:180px;height:180px}
+.donut-ctr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.donut-val{font-family:var(--fd);font-size:22px;font-weight:800;color:var(--text);line-height:1}
+.donut-lbl{font-size:10px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+.leg{flex:1;display:flex;flex-direction:column;gap:10px;min-width:140px}
+.leg-item{display:flex;align-items:center;gap:10px}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.leg-name{font-size:13px;color:var(--text);flex:1}
+.leg-sub{font-size:11px;color:var(--text-dim);display:block;margin-top:1px}
+.leg-val{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--text-muted);white-space:nowrap}
+.nota{margin-top:16px;padding:12px 14px;background:rgba(51,169,99,.06);border:1px solid rgba(51,169,99,.15);border-radius:8px;font-size:12px;color:var(--text-dim);line-height:1.6}
+.nota strong{color:var(--text-muted);font-weight:500}
+.bar-list{display:flex;flex-direction:column;gap:12px}
+.bar-hdr{display:flex;justify-content:space-between;margin-bottom:5px}
+.bar-nm{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%}
+.bar-vl{font-family:var(--fd);font-size:12px;font-weight:700;color:var(--text-muted);white-space:nowrap}
+.bar-tr{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.bar-fl{height:100%;border-radius:3px}
+.otbl{width:100%;border-collapse:collapse}
+.otbl th{font-size:10px;font-family:var(--fd);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.otbl td{font-size:13px;color:var(--text);padding:10px 10px;border-bottom:1px solid rgba(51,169,99,.08);vertical-align:middle}
+.otbl tr:last-child td{border-bottom:none}
+.otbl tr:hover td{background:rgba(51,169,99,.04)}
+.otbl td.num,.otbl th.num{text-align:right;font-family:var(--fd);font-weight:700}
+.pill{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.05em;padding:2px 8px;border-radius:10px;text-transform:uppercase}
+.pill-r{background:rgba(51,169,99,.15);color:var(--verde-light);border:1px solid rgba(51,169,99,.3)}
+.pill-f{background:rgba(204,127,75,.12);color:var(--terra);border:1px solid rgba(204,127,75,.3)}
+.pill-ce{background:rgba(206,163,77,.15);color:var(--dourado);border:1px solid rgba(206,163,77,.3)}
+.pip-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pip-c{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.pip-tipo{font-size:11px;font-family:var(--fd);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dourado)}
+.pip-mw{font-family:var(--fd);font-size:22px;font-weight:800;color:var(--text);line-height:1}
+.pip-mw small{font-size:12px;font-weight:600;color:var(--text-muted)}
+.pip-cnt{font-size:12px;color:var(--text-muted)}
+.analise-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.analise-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.analise-item.up{border-left:3px solid var(--verde-light)}
+.analise-item.down{border-left:3px solid var(--terra)}
+.analise-item.neutral{border-left:3px solid var(--text-dim)}
+.analise-tag{font-size:10px;font-family:var(--fd);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.analise-tag.up{color:var(--verde-light)}.analise-tag.down{color:var(--terra)}.analise-tag.neutral{color:var(--text-dim)}
+.analise-val{font-family:var(--fd);font-size:20px;font-weight:800;color:var(--text);line-height:1}
+.analise-delta{font-size:13px;font-weight:500}
+.analise-delta.up{color:var(--verde-light)}.analise-delta.down{color:var(--terra)}.analise-delta.neutral{color:var(--text-dim)}
+.analise-desc{font-size:12px;color:var(--text-dim);line-height:1.5}
+.analise-periodo{font-size:11px;color:var(--text-dim);padding:10px 14px;background:rgba(51,169,99,.04);border-radius:6px;margin-bottom:4px}
+.ne-tbl{width:100%;border-collapse:collapse}
+.ne-tbl th{font-size:10px;font-family:var(--fd);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);padding:10px 12px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+.ne-tbl th:first-child{text-align:left}
+.ne-tbl td{font-size:13px;padding:11px 12px;border-bottom:1px solid rgba(51,169,99,.07);vertical-align:middle;text-align:right}
+.ne-tbl td:first-child{text-align:left;font-weight:600;color:var(--text)}
+.ne-tbl tr:last-child td{border-bottom:none}
+.ne-tbl tr:hover td{background:rgba(51,169,99,.04)}
+.ne-tbl tr.highlight td{background:rgba(206,163,77,.06)}
+.ne-tbl tr.highlight td:first-child{color:var(--dourado)}
+.ne-bar-wrap{display:flex;align-items:center;gap:8px}
+.ne-bar-bg{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;min-width:40px}
+.ne-bar-fill{height:100%;border-radius:3px;background:var(--verde-light)}
+.ne-num{font-family:var(--fd);font-weight:700;color:var(--text-muted);font-size:13px;white-space:nowrap;min-width:70px;text-align:right}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:700;font-family:var(--fd);flex-shrink:0}
+.rank-1{background:rgba(206,163,77,.2);color:var(--dourado)}
+.rank-2{background:rgba(51,169,99,.15);color:var(--verde-light)}
+.rank-3{background:rgba(84,166,169,.15);color:var(--teal)}
+.rank-n{background:rgba(77,110,85,.15);color:var(--text-dim)}
+.loading{display:flex;align-items:center;justify-content:center;min-height:300px;flex-direction:column;gap:16px}
+.loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--verde-light);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:13px;color:var(--text-dim)}
+.footer{border-top:1px solid var(--border);padding:28px 24px}
+.footer-in{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:12px}
+.footer-secr{font-size:12px;color:var(--text-muted);text-align:center;line-height:1.6;max-width:700px}
+.footer-secr strong{color:var(--dourado);font-weight:600}
+.footer-row{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap}
+.ft{font-size:12px;color:var(--text-dim)}
+.ft a{color:var(--teal-light);text-decoration:none}
+.fs{width:1px;height:16px;background:var(--border)}
+@media(max-width:900px){
+  .g2,.g12,.g21{grid-template-columns:1fr}
+  .kpi-strip{width:100%}.kpi-c{flex:1;min-width:130px}
+  .hero-in{flex-direction:column;align-items:flex-start;gap:28px}
+  .donut-lay{flex-direction:column;align-items:flex-start}
+  .donut-wrap{width:160px;height:160px;align-self:center}
+  .pip-grid{grid-template-columns:1fr 1fr}
+  .hdr-badge,.uf-lbl{display:none}
+  .analise-grid{grid-template-columns:1fr}
+  .hdr-brasao-horiz{height:34px;max-width:180px}
+}
+@media(max-width:500px){
+  .hero{padding:32px 16px 24px}.main{padding:20px 16px 40px}.card{padding:18px 16px}
+  .kpi-c{min-width:110px}.kpi-val{font-size:22px}
+  .pip-grid,.analise-grid{grid-template-columns:1fr}
+  .hdr-in{height:56px}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.card,.kpi-c{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="hdr-logo">
+      <img class="hdr-brasao-horiz" src="brasao_ceara_sri_horizontal.png"
+           alt="Ceará — Governo do Estado — Secretaria das Relações Internacionais"
+           onerror="this.style.display='none'">
+    </div>
+    <div class="hdr-div"></div>
+    <span class="hdr-badge">SIGA — Sistema de Informações de Geração da ANEEL</span>
+    <div class="hdr-sp"></div>
+    <div class="uf-wrap">
+      <span class="uf-lbl">Estado:</span>
+      <select class="uf-select" id="uf-select"><option value="CE">CE — Ceará</option></select>
+    </div>
+    <span class="data-tag" id="hdr-date">Carregando...</span>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-in">
+    <div class="hero-text">
+      <div class="hero-ey" id="hero-ey">Estado do Ceará · Setor Elétrico</div>
+      <h1 class="hero-h"><span class="wh">Geração de Energia do</span> <span class="ac" id="hero-estado">Ceará</span></h1>
+      <p class="hero-desc">Capacidade instalada, matriz energética e pipeline de novos empreendimentos, com dados do SIGA — Sistema de Informações de Geração da ANEEL.</p>
+      <p class="src-note">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" stroke="#4d6e55"/><path d="M6 5.5V9M6 3.5v.5" stroke="#4d6e55" stroke-linecap="round"/></svg>
+        Fonte: <a href="https://dadosabertos.aneel.gov.br/dataset/siga-sistema-de-informacoes-de-geracao-da-aneel" target="_blank">SIGA/ANEEL — Dados Abertos</a>
+      </p>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi-c"><span class="kpi-lbl">Cap. Instalada</span><div class="kpi-val" id="kpi-mw">—</div><div class="kpi-sub">em operação</div></div>
+      <div class="kpi-c gold"><span class="kpi-lbl">Renovável</span><div class="kpi-val" id="kpi-renov">—</div><div class="kpi-sub">da matriz</div></div>
+      <div class="kpi-c teal"><span class="kpi-lbl">Empreend.</span><div class="kpi-val" id="kpi-empr">—</div><div class="kpi-sub">em operação</div></div>
+      <div class="kpi-c terra"><span class="kpi-lbl">Pipeline</span><div class="kpi-val" id="kpi-pipe">—</div><div class="kpi-sub" id="kpi-pipe-sub">outorgados</div></div>
+    </div>
+  </div>
+</section>
+
+<main class="main" id="main-content">
+  <div class="loading"><div class="loading-spinner"></div><span class="loading-txt">Carregando dados...</span></div>
+</main>
+
+<footer class="footer">
+  <div class="footer-in">
+    <div class="footer-secr">
+      Elaborado pela <strong>Secretaria Executiva de Atração de Investimentos, Recursos Externos e Inteligência Comercial</strong> da Secretaria das Relações Internacionais do Ceará
+    </div>
+    <div class="footer-row">
+      <span class="ft">Dados: <a href="https://dadosabertos.aneel.gov.br/dataset/siga-sistema-de-informacoes-de-geracao-da-aneel" target="_blank">SIGA — Sistema de Informações de Geração da ANEEL</a></span>
+      <div class="fs"></div>
+      <span class="ft" id="ft-estado">Estado do Ceará</span>
+      <div class="fs"></div>
+      <span class="ft" id="ft-date">Referência: —</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const NOME_UF={AC:'Acre',AL:'Alagoas',AM:'Amazonas',AP:'Amapá',BA:'Bahia',CE:'Ceará',DF:'Distrito Federal',ES:'Espírito Santo',GO:'Goiás',MA:'Maranhão',MG:'Minas Gerais',MS:'Mato Grosso do Sul',MT:'Mato Grosso',PA:'Pará',PB:'Paraíba',PE:'Pernambuco',PI:'Piauí',PR:'Paraná',RJ:'Rio de Janeiro',RN:'Rio Grande do Norte',RO:'Rondônia',RR:'Roraima',RS:'Rio Grande do Sul',SC:'Santa Catarina',SE:'Sergipe',SP:'São Paulo',TO:'Tocantins'};
+const NE_UFS=['MA','PI','CE','RN','PB','PE','AL','SE','BA'];
+const COR_TIPO={'Radiação solar':'#cea34d','Cinética do vento':'#33a963','Potencial hidráulico':'#54a6a9','Floresta':'#7bbfc0','Gás natural':'#e8a87a','Carvão mineral':'#8a4e22','Petróleo':'#cc7f4b','Outros Fósseis':'#a0622a','Biomassa':'#7bbfc0'};
+const COR_ORIG={'Solar':'#cea34d','Eólica':'#33a963','Hídrica':'#54a6a9','Biomassa':'#7bbfc0','Fóssil':'#cc7f4b'};
+const GRID='rgba(51,169,99,0.08)',TICK='#4d6e55',BG_CARD='#1a2f21';
+
+function fmtMW(mw){
+  if(mw>=1000) return (mw/1000).toFixed(2).replace('.',',')+' GW';
+  if(mw>=100)  return mw.toFixed(0)+' MW';
+  if(mw>=1)    return mw.toFixed(1).replace('.',',')+' MW';
+  return (mw*1000).toFixed(0)+' kW';
+}
+function fmtGW(mw){return (mw/1000).toFixed(2).replace('.',',');}
+function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');const mo=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return`${parseInt(day)} ${mo[parseInt(m)-1]} ${y}`}
+function fmtMes(d){const[y,m]=d.split('-');const mo=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return mo[parseInt(m)-1]+'/'+y.slice(2)}
+function corT(t){return COR_TIPO[t]||'#8aaa90'}
+function corO(o){return COR_ORIG[o]||'#8aaa90'}
+function cls(v){return v>0?'up':v<0?'down':'neutral'}
+function seta(v){return v>0?'▲':v<0?'▼':'—'}
+
+let activeCharts=[];
+function destroyCharts(){activeCharts.forEach(c=>c.destroy());activeCharts=[];}
+function makeChart(...a){const c=new Chart(...a);activeCharts.push(c);return c;}
+
+function renderAnalise(d,nome){
+  const s=d.serie_historica;
+  if(!s||s.length<2) return '<div class="nota">Histórico insuficiente para comparação — necessário pelo menos 2 meses de dados.</div>';
+  const atual=s[s.length-1],ant=s[s.length-2];
+  const deltaMW=+(atual.total_mw-ant.total_mw).toFixed(1);
+  const deltaRen=+(atual.pct_renovavel-ant.pct_renovavel).toFixed(1);
+  const deltaEmpr=atual.n_empreendimentos-ant.n_empreendimentos;
+  function item(tag,val,delta,unit,desc){
+    const c=cls(delta),st=seta(delta);
+    const dStr=delta===0?'Sem variação':`${st} ${Math.abs(delta).toFixed(Math.abs(delta)<10?1:0).replace('.',',')} ${unit}`;
+    return `<div class="analise-item ${c}"><div class="analise-tag ${c}">${tag}</div><div class="analise-val">${val}</div><div class="analise-delta ${c}">${dStr}</div><div class="analise-desc">${desc}</div></div>`;
+  }
+  const mwDesc=deltaMW>0?`A capacidade cresceu ${Math.abs(deltaMW).toFixed(1).replace('.',',')} MW em relação a ${fmtDate(ant.data)}.`:deltaMW<0?`Redução de ${Math.abs(deltaMW).toFixed(1).replace('.',',')} MW em relação a ${fmtDate(ant.data)}.`:`Capacidade estável em relação a ${fmtDate(ant.data)}.`;
+  const renDesc=deltaRen>0?`Participação renovável aumentou ${Math.abs(deltaRen).toFixed(1).replace('.',',')} p.p.`:deltaRen<0?`Participação renovável recuou ${Math.abs(deltaRen).toFixed(1).replace('.',',')} p.p.`:`Participação renovável estável.`;
+  const emprDesc=deltaEmpr>0?`${deltaEmpr} novo(s) empreendimento(s) entraram em operação.`:deltaEmpr<0?`${Math.abs(deltaEmpr)} empreendimento(s) saíram do status de operação.`:`Número de empreendimentos sem alteração.`;
+  return `<div class="analise-periodo">Comparativo: <strong>${fmtDate(ant.data)}</strong> → <strong>${fmtDate(atual.data)}</strong> · ${nome}</div><div class="analise-grid">${item('Capacidade instalada',fmtMW(atual.total_mw),deltaMW,'MW',mwDesc)}${item('Participação renovável',atual.pct_renovavel.toFixed(1).replace('.',',')+' %',deltaRen,'p.p.',renDesc)}${item('Empreendimentos em operação',atual.n_empreendimentos,deltaEmpr,'empreend.',emprDesc)}</div>`;
+}
+
+function renderNordeste(allData,ufAtual){
+  const rows=NE_UFS.map(uf=>{const d=allData.estados[uf];if(!d)return null;return{uf,nome:d.nome_estado||NOME_UF[uf]||uf,mw:d.kpis.total_mw_operacao,renov:d.kpis.pct_renovavel,empr:d.kpis.total_empreendimentos_operacao,pipeline:d.kpis.pipeline_mw,ref:d.data_referencia};}).filter(Boolean).sort((a,b)=>b.mw-a.mw);
+  if(rows.length===0) return '<div class="nota">Dados dos estados do Nordeste não disponíveis.</div>';
+  const maxMW=rows[0].mw;
+  const rc=i=>i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n';
+  const trs=rows.map((r,i)=>`<tr class="${r.uf===ufAtual?'highlight':''}"><td><span class="rank-badge ${rc(i)}">${i+1}</span> ${r.nome}${r.uf===ufAtual?' <span class="pill pill-ce">atual</span>':''}</td><td><div class="ne-bar-wrap"><div class="ne-bar-bg"><div class="ne-bar-fill" style="width:${(r.mw/maxMW*100).toFixed(1)}%"></div></div><span class="ne-num">${fmtMW(r.mw)}</span></div></td><td class="num">${r.renov.toFixed(1).replace('.',',')} %</td><td class="num">${r.empr.toLocaleString('pt-BR')}</td><td class="num">${fmtMW(r.pipeline)}</td><td style="font-size:11px;color:var(--text-dim);text-align:right">${fmtDate(r.ref)}</td></tr>`).join('');
+  return `<table class="ne-tbl"><thead><tr><th style="text-align:left">Estado</th><th style="text-align:left">Cap. em Operação</th><th class="num">% Renovável</th><th class="num">Empreend.</th><th class="num">Pipeline</th><th class="num">Referência</th></tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+function renderContent(d,allData){
+  destroyCharts();
+  Chart.defaults.color='#8aaa90';
+  Chart.defaults.font.family="'DM Sans',sans-serif";
+  Chart.defaults.font.size=12;
+  const uf=d.uf||'CE';
+  const nome=d.nome_estado||NOME_UF[uf]||uf;
+  document.getElementById('hero-ey').textContent=`Estado do ${nome} · Setor Elétrico`;
+  document.getElementById('hero-estado').textContent=nome;
+  document.getElementById('hdr-date').textContent='Ref. '+fmtDate(d.data_referencia);
+  document.getElementById('ft-date').textContent='Referência: '+fmtDate(d.data_referencia);
+  document.getElementById('ft-estado').textContent=`Estado do ${nome}`;
+  document.getElementById('kpi-mw').innerHTML=`${fmtGW(d.kpis.total_mw_operacao)} <small>GW</small>`;
+  document.getElementById('kpi-renov').innerHTML=`${d.kpis.pct_renovavel.toFixed(0)} <small>%</small>`;
+  document.getElementById('kpi-empr').textContent=d.kpis.total_empreendimentos_operacao.toLocaleString('pt-BR');
+  document.getElementById('kpi-pipe').innerHTML=`${fmtGW(d.kpis.pipeline_mw)} <small>GW</small>`;
+  document.getElementById('kpi-pipe-sub').textContent=`${d.kpis.pipeline_count.toLocaleString('pt-BR')} empreend. outorgados`;
+
+  const histHTML=(d.serie_historica&&d.serie_historica.length>1)?`
+  <div class="sgap">
+    <div class="sec-title">Evolução Histórica</div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-t"><span><span class="acc"></span>Capacidade Fiscalizada em Operação (GW)</span><span style="font-size:11px;color:var(--text-dim);font-weight:400;letter-spacing:0;text-transform:none">${fmtDate(d.serie_historica[0].data)} → ${fmtDate(d.serie_historica[d.serie_historica.length-1].data)}</span></div>
+      <div style="position:relative;height:260px"><canvas id="chHist"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-t"><span><span class="acc gold"></span>Participação Renovável na Matriz (%)</span></div>
+      <div style="position:relative;height:200px"><canvas id="chHistR"></canvas></div>
+    </div>
+  </div>`:'';
+
+  document.getElementById('main-content').innerHTML=`
+  <div class="sgap">
+    <div class="sec-title">Matriz Energética em Operação</div>
+    <div class="g12">
+      <div class="card"><div class="card-t"><span><span class="acc"></span>Capacidade por Tipo de Recurso</span></div>
+        <div class="donut-lay"><div class="donut-wrap"><canvas id="chTipo"></canvas><div class="donut-ctr"><div class="donut-val" id="dn-tot">—</div><div class="donut-lbl">total</div></div></div><div class="leg" id="leg-tipo"></div></div>
+      </div>
+      <div class="card"><div class="card-t"><span><span class="acc gold"></span>Renovável vs Fóssil</span></div>
+        <div class="donut-lay"><div class="donut-wrap"><canvas id="chRenov"></canvas><div class="donut-ctr"><div class="donut-val" id="dn-renov">—</div><div class="donut-lbl">renovável</div></div></div><div class="leg" id="leg-renov"></div></div>
+        <div class="nota" id="nota-renov"></div>
+      </div>
+    </div>
+  </div>
+  ${histHTML}
+  <div class="sgap"><div class="sec-title">Análise Comparativa — Último vs Penúltimo Mês</div><div class="card" id="card-analise"></div></div>
+  <div class="sgap">
+    <div class="sec-title">Distribuição Municipal</div>
+    <div class="g21">
+      <div class="card"><div class="card-t"><span><span class="acc teal"></span>Top 15 Municípios — Potência Fiscalizada</span></div><div class="bar-list" id="bar-mun"></div></div>
+      <div class="card"><div class="card-t"><span><span class="acc terra"></span>Por Origem e Tipo de Recurso</span></div>
+        <table class="otbl"><thead><tr><th>Origem</th><th>Tipo</th><th class="num">Potência</th><th class="num">N°</th></tr></thead><tbody id="tbl-orig"></tbody></table>
+      </div>
+    </div>
+  </div>
+  <div class="sgap"><div class="sec-title">Comparativo Nordeste — Capacidade Instalada em Operação</div><div class="card" id="card-nordeste"></div></div>
+  <div class="sgap">
+    <div class="sec-title">Pipeline — Outorgas Ainda Não em Operação</div>
+    <div class="g2">
+      <div class="card"><div class="card-t"><span><span class="acc gold"></span>Capacidade Outorgada Não Operacional por Origem</span></div>
+        <div class="pip-grid" id="pip-cards"></div>
+        <div class="nota" style="margin-top:16px"><strong>O que é o pipeline?</strong> Empreendimentos com outorga concedida pela ANEEL que ainda não entraram em operação — incluem os em fase de construção e com construção ainda não iniciada. A potência outorgada indica o potencial autorizado, não a capacidade já instalada.</div>
+      </div>
+      <div class="card"><div class="card-t"><span><span class="acc"></span>Empreendimentos por Fase</span></div><div style="position:relative;height:200px"><canvas id="chFase"></canvas></div></div>
+    </div>
+  </div>`;
+
+  // Donut Tipo
+  const tipoC=d.por_tipo.map(t=>corT(t.tipo));
+  makeChart(document.getElementById('chTipo'),{type:'doughnut',data:{labels:d.por_tipo.map(t=>t.tipo),datasets:[{data:d.por_tipo.map(t=>t.mw),backgroundColor:tipoC,borderColor:BG_CARD,borderWidth:3,hoverOffset:6}]},options:{cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${fmtMW(ctx.raw)}`,afterLabel:ctx=>{const t=d.por_tipo[ctx.dataIndex];return` ${t.fontes} · ${t.count} empreend.`}}}},animation:{duration:900}}});
+  document.getElementById('dn-tot').textContent=fmtMW(d.kpis.total_mw_operacao);
+  const legT=document.getElementById('leg-tipo');
+  d.por_tipo.forEach((t,i)=>{legT.innerHTML+=`<div class="leg-item"><div class="leg-dot" style="background:${tipoC[i]}"></div><span class="leg-name">${t.tipo}<span class="leg-sub">${t.origem} · ${t.fontes}</span></span><span class="leg-val">${fmtMW(t.mw)}</span></div>`;});
+
+  // Donut Renovável
+  const origC=d.por_origem.map(o=>corO(o.origem));
+  makeChart(document.getElementById('chRenov'),{type:'doughnut',data:{labels:d.por_origem.map(o=>o.origem),datasets:[{data:d.por_origem.map(o=>o.mw),backgroundColor:origC,borderColor:BG_CARD,borderWidth:3,hoverOffset:6}]},options:{cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${fmtMW(ctx.raw)}`,afterLabel:ctx=>d.por_origem[ctx.dataIndex].renovavel?' ✓ renovável':' ✗ fóssil'}}},animation:{duration:900}}});
+  document.getElementById('dn-renov').textContent=d.kpis.pct_renovavel.toFixed(1).replace('.',',')+' %';
+  const legR=document.getElementById('leg-renov');
+  d.por_origem.forEach((o,i)=>{legR.innerHTML+=`<div class="leg-item"><div class="leg-dot" style="background:${origC[i]}"></div><span class="leg-name">${o.origem}<span class="leg-sub">${o.renovavel?'Renovável':'Fóssil'} · ${o.count} empreend.</span></span><span class="leg-val">${fmtMW(o.mw)}</span></div>`;});
+  const renovN=d.por_origem.filter(o=>o.renovavel).map(o=>o.origem).join(', ')||'—';
+  const fossN=d.por_origem.filter(o=>!o.renovavel).map(o=>o.origem).join(', ')||'—';
+  document.getElementById('nota-renov').innerHTML=`<strong>Critério de classificação:</strong> Renováveis: ${renovN}. Fósseis: ${fossN}. Classificação conforme a coluna "Origem" do SIGA/ANEEL.`;
+
+  // Histórico
+  if(d.serie_historica&&d.serie_historica.length>1){
+    const hl=d.serie_historica.map(s=>fmtMes(s.data));
+    const pr=d.serie_historica.length>24?2:4;
+    makeChart(document.getElementById('chHist'),{type:'line',data:{labels:hl,datasets:[{label:'GW',data:d.serie_historica.map(s=>+(s.total_mw/1000).toFixed(3)),borderColor:'#33a963',backgroundColor:'rgba(51,169,99,.08)',borderWidth:2.5,pointRadius:pr,pointBackgroundColor:'#33a963',fill:true,tension:0.35}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y.toFixed(2).replace('.',',')} GW`,title:ctxs=>{const s=d.serie_historica[ctxs[0].dataIndex];return fmtDate(s.data)+' · '+s.n_empreendimentos+' empreend.'}}}},scales:{x:{grid:{color:GRID},ticks:{color:TICK,maxRotation:45,font:{size:11}}},y:{grid:{color:GRID},ticks:{color:TICK,callback:v=>v.toFixed(1).replace('.',',')+' GW'}}}}});
+    makeChart(document.getElementById('chHistR'),{type:'line',data:{labels:hl,datasets:[{label:'%',data:d.serie_historica.map(s=>s.pct_renovavel),borderColor:'#cea34d',backgroundColor:'rgba(206,163,77,.07)',borderWidth:2.5,pointRadius:pr,pointBackgroundColor:'#cea34d',fill:true,tension:0.35}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y.toFixed(1).replace('.',',')}% renovável`}}},scales:{x:{grid:{color:GRID},ticks:{color:TICK,maxRotation:45,font:{size:11}}},y:{grid:{color:GRID},ticks:{color:TICK,callback:v=>v+'%'},min:0,max:100}}}});
+  }
+
+  // Análise
+  document.getElementById('card-analise').innerHTML=renderAnalise(d,nome);
+
+  // Municípios
+  const maxM=d.top_municipios[0]?.mw||1;
+  const barEl=document.getElementById('bar-mun');
+  d.top_municipios.forEach((m,i)=>{const c=i<3?'#33a963':i<8?'#54a6a9':'#2a9e50';barEl.innerHTML+=`<div><div class="bar-hdr"><span class="bar-nm">${m.municipio}</span><span class="bar-vl">${fmtMW(m.mw)}</span></div><div class="bar-tr"><div class="bar-fl" style="width:${(m.mw/maxM*100).toFixed(1)}%;background:${c}"></div></div></div>`;});
+
+  // Tabela origem+tipo
+  const tb=document.querySelector('#tbl-orig');
+  d.por_tipo.forEach(t=>{tb.innerHTML+=`<tr><td><span class="pill ${t.renovavel?'pill-r':'pill-f'}">${t.origem}</span></td><td>${t.tipo}</td><td class="num">${fmtMW(t.mw)}</td><td class="num">${t.count}</td></tr>`;});
+
+  // Nordeste
+  document.getElementById('card-nordeste').innerHTML=renderNordeste(allData,uf);
+
+  // Pipeline
+  const pipG=document.getElementById('pip-cards');
+  d.pipeline.forEach(p=>{pipG.innerHTML+=`<div class="pip-c"><div class="pip-tipo">${p.origem}</div><div class="pip-mw">${fmtGW(p.mw)} <small>GW</small></div><div class="pip-cnt">${p.count.toLocaleString('pt-BR')} empreendimentos</div></div>`;});
+
+  // Fases
+  makeChart(document.getElementById('chFase'),{type:'bar',data:{labels:d.por_fase.map(f=>f.fase),datasets:[{data:d.por_fase.map(f=>f.count),backgroundColor:d.por_fase.map(f=>f.fase==='Operação'?'#33a963':f.fase==='Construção'?'#cea34d':'#4d6e55'),borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toLocaleString('pt-BR')} empreend. · ${fmtMW(d.por_fase[ctx.dataIndex].mw)} outorgados`}}},scales:{x:{grid:{color:GRID},ticks:{color:TICK}},y:{grid:{display:false},ticks:{color:'#8aaa90',font:{size:12}}}}}});
+}
+
+function showLoading(){
+  document.getElementById('main-content').innerHTML='<div class="loading"><div class="loading-spinner"></div><span class="loading-txt">Carregando dados...</span></div>';
+  document.getElementById('hdr-date').textContent='Carregando...';
+}
+
+let SIGA_DATA=null;
+
+function loadUF(uf){
+  if(!SIGA_DATA||!SIGA_DATA.estados){showLoading();return;}
+  const d=SIGA_DATA.estados[uf];
+  if(!d){
+    document.getElementById('main-content').innerHTML=`<div class="loading"><span class="loading-txt" style="color:var(--terra)">Dados para ${uf} não encontrados. Execute o script atualizar_dados.py.</span></div>`;
+    document.getElementById('hdr-date').textContent='Sem dados';
+    return;
+  }
+  renderContent(d,SIGA_DATA);
+}
+
+fetch('siga_data.json')
+  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
+  .then(function(txt){
+    var data=JSON.parse(txt);
+    SIGA_DATA=data;
+    var sel=document.getElementById('uf-select');
+    sel.innerHTML='';
+    var ufs=data.ufs_disponiveis||[];
+    for(var i=0;i<ufs.length;i++){
+      var opt=document.createElement('option');
+      opt.value=ufs[i].uf;
+      opt.textContent=ufs[i].uf+' — '+ufs[i].nome;
+      if(ufs[i].uf==='CE') opt.selected=true;
+      sel.appendChild(opt);
+    }
+    var ufInicial='CE';
+    if(!data.estados['CE']&&ufs.length>0) ufInicial=ufs[0].uf;
+    sel.value=ufInicial;
+    sel.addEventListener('change',function(){loadUF(sel.value);});
+    loadUF(ufInicial);
+  })
+  .catch(function(err){
+    console.error('Erro ao carregar siga_data.json:',err);
+    document.getElementById('main-content').innerHTML='<div class="loading"><span class="loading-txt" style="color:var(--terra)">Erro ao carregar siga_data.json. Verifique se o arquivo está na pasta e execute o servidor local.</span></div>';
+    document.getElementById('hdr-date').textContent='Sem dados';
+  });
+</script>
+</body>
+</html>
